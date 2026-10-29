@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ular Tangga Matematika - Kelompok 5</title>
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --panel-bg: #151d30;
+            --accent-red: #ef4444;   /* Ular */
+            --accent-green: #10b981; /* Tangga */
+            --accent-gold: #f59e0b;  /* UI & Finish */
+            --accent-blue: #3b82f6;  /* Pemain */
+            --accent-cyan: #06b6d4;  /* UI */
+            --text-light: #f8fafc;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-light);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 15px;
+        }
+
+        h1 {
+            font-size: 1.6rem;
+            color: var(--accent-gold);
+            text-align: center;
+            margin-bottom: 2px;
+            text-shadow: 0 0 10px rgba(245, 158, 11, 0.3);
+        }
+
+        p.subtitle {
+            font-size: 0.95rem;
+            color: #94a3b8;
+            margin-bottom: 15px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .main-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            align-items: flex-start;
+            max-width: 1000px;
+            width: 100%;
+        }
+
+        .game-panel {
+            background: var(--panel-bg);
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        canvas {
+            background-color: #0d1322;
+            border-radius: 8px;
+            border: 3px solid var(--accent-gold);
+            box-shadow: 0 0 20px rgba(245, 158, 11, 0.2);
+        }
+
+        .side-panel {
+            flex: 1;
+            min-width: 320px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .card {
+            background: var(--panel-bg);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #1e293b;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+        }
+
+        .card-title {
+            font-size: 1rem;
+            color: var(--accent-gold);
+            margin-bottom: 10px;
+            border-bottom: 1px solid #334155;
+            padding-bottom: 5px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .status-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+            font-size: 0.9rem;
+        }
+
+        .status-val {
+            font-weight: bold;
+            color: var(--accent-cyan);
+        }
+
+        .dice-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .dice-box {
+            width: 48px;
+            height: 48px;
+            background: #ffffff;
+            color: #111;
+            font-size: 1.6rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            box-shadow: 0 0 12px rgba(255, 255, 255, 0.4);
+        }
+
+        .dice-box.rolling {
+            animation: shake 0.25s infinite;
+        }
+
+        @keyframes shake {
+            0% { transform: rotate(0deg) scale(1.05); }
+            50% { transform: rotate(-8deg) scale(1.05); }
+            100% { transform: rotate(8deg) scale(1.05); }
+        }
+
+        .btn {
+            background: linear-gradient(135deg, var(--accent-blue), #1d4ed8);
+            color: white;
+            border: none;
+            padding: 10px 14px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2deg);
+            filter: brightness(1.1);
+        }
+
+        .btn:disabled {
+            background: #334155;
+            color: #64748b;
+            cursor: not-allowed;
+        }
+
+        .btn-dice {
+            background: linear-gradient(135deg, var(--accent-gold), #d97706);
+            color: #000;
+            flex: 1;
+        }
+
+        .question-box {
+            font-size: 1.15rem;
+            font-weight: bold;
+            margin: 10px 0;
+            text-align: center;
+            color: #38bdf8;
+            background: #090d16;
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid #1e293b;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 10px;
+            font-size: 0.8rem;
+            justify-content: center;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .legend-box {
+            width: 14px;
+            height: 14px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Ular Tangga Matematika</h1>
+    <p class="subtitle">Kelompok 5</p>
+
+    <div class="main-container">
+        <!-- Papan Game Canvas -->
+        <div class="game-panel">
+            <canvas id="boardCanvas" width="400" height="400"></canvas>
+            
+            <div class="legend">
+                <div class="legend-item"><div class="legend-box" style="background:var(--accent-green)"></div>Tangga (Naik)</div>
+                <div class="legend-item"><div class="legend-box" style="background:var(--accent-red)"></div>Ular (Turun)</div>
+                <div class="legend-item"><div class="legend-box" style="background:var(--accent-gold)"></div>Finish (Petak 100)</div>
+            </div>
+        </div>
+
+        <!-- Panel Informasi & Kartu Soal -->
+        <div class="side-panel">
+            <div class="card">
+                <div class="card-title">
+                    <span>Status Permainan</span>
+                    <span id="score-display" style="font-size:0.85rem; color:var(--accent-gold)">Skor: 0</span>
+                </div>
+                <div class="status-row">
+                    <span>Posisi Petak:</span>
+                    <span id="player-pos" class="status-val">1</span>
+                </div>
+                <div class="status-row">
+                    <span>Angka Dadu:</span>
+                    <span id="moves-left" class="status-val">0</span>
+                </div>
+                <div class="status-row">
+                    <span>Status Permainan:</span>
+                    <span id="game-status" class="status-val">Kocok Dadu</span>
+                </div>
+
+                <div class="dice-container">
+                    <div id="dice-val" class="dice-box">?</div>
+                    <button id="roll-btn" class="btn btn-dice" onclick="rollDice()">🎲 Kocok Dadu</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">Kartu Soal Numerasi Dasar</div>
+                <p id="quiz-desc" style="font-size:0.85rem; color:#94a3b8;">Kocok dadu dan jawab soal untuk melangkah maju!</p>
+                
+                <div id="question-box" class="question-box" style="display: none;">-</div>
+                <div id="options-grid" class="options-grid" style="display: none;">
+                    <button class="btn" onclick="answerQuiz(0)" id="opt0">-</button>
+                    <button class="btn" onclick="answerQuiz(1)" id="opt1">-</button>
+                    <button class="btn" onclick="answerQuiz(2)" id="opt2">-</button>
+                    <button class="btn" onclick="answerQuiz(3)" id="opt3">-</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Audio Synthesizer (Web Audio API)
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        function playSound(freq, duration, type = 'sine') {
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = type;
+                osc.frequency.value = freq;
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + duration);
+            } catch (e) {}
+        }
+
+        // Suara Tepuk Tangan & Fanfare Kemenangan
+        function playCheerAndApplauseSound() {
+            try {
+                const duration = 2.5;
+                const bufferSize = audioCtx.sampleRate * duration;
+                const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                const data = buffer.getChannelData(0);
+
+                for (let i = 0; i < bufferSize; i++) {
+                    data[i] = Math.random() * 2 - 1;
+                }
+
+                const noise = audioCtx.createBufferSource();
+                noise.buffer = buffer;
+
+                const filter = audioCtx.createBiquadFilter();
+                filter.type = 'bandpass';
+                filter.frequency.value = 1200;
+                filter.Q.value = 1.0;
+
+                const gain = audioCtx.createGain();
+                gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+
+                noise.connect(filter);
+                filter.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                noise.start();
+
+                const fanfareNotes = [523.25, 659.25, 783.99, 1046.50];
+                fanfareNotes.forEach((freq, idx) => {
+                    setTimeout(() => {
+                        playSound(freq, 0.4, 'triangle');
+                    }, idx * 180);
+                });
+            } catch (e) {}
+        }
+
+        const canvas = document.getElementById('boardCanvas');
+        const ctx = canvas.getContext('2d');
+
+        const boardSize = 10;
+        const cellSize = canvas.width / boardSize;
+
+        let playerPos = 1;
+        let animatedPos = null; // Koordinat {x, y} untuk animasi meluncur
+        let pendingRoll = 0;
+        let isWaitingQuiz = false;
+        let isRolling = false;
+        let isAnimating = false;
+        let currentQuestion = null;
+        let score = 0;
+
+        // Pemetaan Tangga & Ular
+        const ladders = { 4: 14, 9: 31, 20: 38, 28: 84, 40: 59, 51: 67, 63: 81, 71: 91 };
+        const snakes = { 17: 7, 54: 34, 62: 19, 64: 60, 87: 24, 93: 73, 95: 75, 99: 78 };
+
+        // Bank Soal Numerasi
+        const questionsBank = [
+            { q: "5 + 3 = ...", opts: ["8", "7", "9", "6"], ans: 0 },
+            { q: "10 - 4 = ...", opts: ["5", "6", "7", "4"], ans: 1 },
+            { q: "3 x 3 = ...", opts: ["6", "8", "9", "12"], ans: 2 },
+            { q: "12 : 2 = ...", opts: ["4", "6", "5", "8"], ans: 1 },
+            { q: "7 + 6 = ...", opts: ["12", "13", "14", "15"], ans: 1 },
+            { q: "15 - 7 = ...", opts: ["8", "7", "9", "6"], ans: 0 },
+            { q: "4 x 2 = ...", opts: ["6", "8", "10", "12"], ans: 1 },
+            { q: "20 : 4 = ...", opts: ["4", "5", "6", "3"], ans: 1 },
+            { q: "9 + 8 = ...", opts: ["16", "17", "18", "15"], ans: 1 },
+            { q: "14 - 9 = ...", opts: ["4", "5", "6", "3"], ans: 1 },
+            { q: "5 x 5 = ...", opts: ["20", "25", "30", "15"], ans: 1 },
+            { q: "18 : 3 = ...", opts: ["6", "5", "7", "8"], ans: 0 },
+            { q: "11 + 4 = ...", opts: ["14", "15", "16", "13"], ans: 1 },
+            { q: "16 - 8 = ...", opts: ["8", "7", "9", "6"], ans: 0 },
+            { q: "6 x 2 = ...", opts: ["10", "12", "14", "8"], ans: 1 },
+            { q: "24 : 6 = ...", opts: ["3", "4", "5", "6"], ans: 1 },
+            { q: "8 + 8 = ...", opts: ["15", "16", "17", "14"], ans: 1 },
+            { q: "13 - 5 = ...", opts: ["8", "7", "9", "6"], ans: 0 },
+            { q: "7 x 2 = ...", opts: ["12", "14", "16", "15"], ans: 1 },
+            { q: "30 : 5 = ...", opts: ["5", "6", "7", "8"], ans: 1 }
+        ];
+
+        // Konversi Petak (1-100) ke Koordinat Canvas (X, Y)
+        function getCellCoords(squareNum) {
+            let index = squareNum - 1;
+            let row = Math.floor(index / boardSize);
+            let col = index % boardSize;
+
+            if (row % 2 === 1) {
+                col = boardSize - 1 - col;
+            }
+
+            let x = col * cellSize + cellSize / 2;
+            let y = (boardSize - 1 - row) * cellSize + cellSize / 2;
+            return { x, y };
+        }
+
+        // Visualisator menggambar Tangga secara eksplisit
+        function drawLadder(p1, p2) {
+            ctx.save();
+            ctx.strokeStyle = '#10b981';
+            ctx.lineWidth = 3;
+
+            let dx = p2.x - p1.x;
+            let dy = p2.y - p1.y;
+            let angle = Math.atan2(dy, dx);
+            let perpAngle = angle + Math.PI / 2;
+            let width = 6;
+
+            // Rel Kiri & Kanan Tangga
+            let x1_left = p1.x + Math.cos(perpAngle) * width;
+            let y1_left = p1.y + Math.sin(perpAngle) * width;
+            let x2_left = p2.x + Math.cos(perpAngle) * width;
+            let y2_left = p2.y + Math.sin(perpAngle) * width;
+
+            let x1_right = p1.x - Math.cos(perpAngle) * width;
+            let y1_right = p1.y - Math.sin(perpAngle) * width;
+            let x2_right = p2.x - Math.cos(perpAngle) * width;
+            let y2_right = p2.y - Math.sin(perpAngle) * width;
+
+            ctx.beginPath();
+            ctx.moveTo(x1_left, y1_left);
+            ctx.lineTo(x2_left, y2_left);
+            ctx.moveTo(x1_right, y1_right);
+            ctx.lineTo(x2_right, y2_right);
+            ctx.stroke();
+
+            // Anak Tangga
+            let steps = 6;
+            ctx.lineWidth = 2;
+            for (let i = 1; i < steps; i++) {
+                let t = i / steps;
+                let rx1 = x1_left + (x2_left - x1_left) * t;
+                let ry1 = y1_left + (y2_left - y1_left) * t;
+                let rx2 = x1_right + (x2_right - x1_right) * t;
+                let ry2 = y1_right + (y2_right - y1_right) * t;
+
+                ctx.beginPath();
+                ctx.moveTo(rx1, ry1);
+                ctx.lineTo(rx2, ry2);
+                ctx.stroke();
+            }
+            ctx.restore();
+        }
+
+        // Visualisator menggambar Ular secara eksplisit
+        function drawSnake(p1, p2) {
+            ctx.save();
+            ctx.strokeStyle = '#ef4444';
+            ctx.lineWidth = 5;
+            ctx.lineCap = 'round';
+
+            // Kurva Tubuh Ular
+            let midX = (p1.x + p2.x) / 2 + (p1.y - p2.y) * 0.2;
+            let midY = (p1.y + p2.y) / 2 + (p2.x - p1.x) * 0.2;
+
+            ctx.beginPath();
+            ctx.moveTo(p1.x, p1.y);
+            ctx.quadraticCurveTo(midX, midY, p2.x, p2.y);
+            ctx.stroke();
+
+            // Kepala Ular di p1 (Petak Awal)
+            ctx.fillStyle = '#ef4444';
+            ctx.beginPath();
+            ctx.arc(p1.x, p1.y, 6, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Mata Ular
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.arc(p1.x - 2, p1.y - 2, 1.5, 0, Math.PI * 2);
+            ctx.arc(p1.x + 2, p1.y - 2, 1.5, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.restore();
+        }
+
+        function drawBoard() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 1. Gambar Grid Petak 1-100
+            for (let num = 1; num <= 100; num++) {
+                let { x, y } = getCellCoords(num);
+                let cellX = x - cellSize / 2;
+                let cellY = y - cellSize / 2;
+
+                let index = num - 1;
+                let row = Math.floor(index / boardSize);
+                let col = index % boardSize;
+                ctx.fillStyle = (row + col) % 2 === 0 ? '#1e293b' : '#0f172a';
+                
+                if (num === 100) ctx.fillStyle = '#10b981';
+                ctx.fillRect(cellX, cellY, cellSize, cellSize);
+
+                ctx.strokeStyle = '#334155';
+                ctx.strokeRect(cellX, cellY, cellSize, cellSize);
+
+                ctx.fillStyle = num === 100 ? '#ffffff' : '#94a3b8';
+                ctx.font = 'bold 10px sans-serif';
+                ctx.fillText(num, cellX + 3, cellY + 12);
+            }
+
+            // 2. Gambar Semua Tangga
+            for (let start in ladders) {
+                let p1 = getCellCoords(parseInt(start));
+                let p2 = getCellCoords(ladders[start]);
+                drawLadder(p1, p2);
+            }
+
+            // 3. Gambar Semua Ular
+            for (let start in snakes) {
+                let p1 = getCellCoords(parseInt(start));
+                let p2 = getCellCoords(snakes[start]);
+                drawSnake(p1, p2);
+            }
+
+            // 4. Gambar Bidak Pemain
+            let pCoords = animatedPos ? animatedPos : getCellCoords(playerPos);
+            ctx.fillStyle = '#3b82f6';
+            ctx.shadowColor = '#3b82f6';
+            ctx.shadowBlur = 10;
+            ctx.beginPath();
+            ctx.arc(pCoords.x, pCoords.y, cellSize / 3, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+        }
+
+        function rollDice() {
+            if (isWaitingQuiz || isRolling || isAnimating) return;
+
+            isRolling = true;
+            const diceEl = document.getElementById('dice-val');
+            const rollBtn = document.getElementById('roll-btn');
+            
+            diceEl.classList.add('rolling');
+            rollBtn.disabled = true;
+
+            let counter = 0;
+            const interval = setInterval(() => {
+                diceEl.innerText = Math.floor(Math.random() * 6) + 1;
+                playSound(300 + counter * 20, 0.05);
+                counter++;
+                if (counter > 10) {
+                    clearInterval(interval);
+                    pendingRoll = parseInt(diceEl.innerText);
+                    document.getElementById('moves-left').innerText = pendingRoll;
+                    diceEl.classList.remove('rolling');
+                    rollBtn.disabled = false;
+                    isRolling = false;
+                    playSound(600, 0.15, 'triangle');
+                    triggerQuiz();
+                }
+            }, 60);
+        }
+
+        function triggerQuiz() {
+            isWaitingQuiz = true;
+            document.getElementById('game-status').innerText = 'Jawab Soal Dahulu';
+
+            currentQuestion = questionsBank[Math.floor(Math.random() * questionsBank.length)];
+            
+            document.getElementById('question-box').innerText = currentQuestion.q;
+            document.getElementById('question-box').style.display = 'block';
+            document.getElementById('options-grid').style.display = 'grid';
+            
+            for (let i = 0; i < 4; i++) {
+                document.getElementById(`opt${i}`).innerText = currentQuestion.opts[i];
+            }
+        }
+
+        function answerQuiz(selectedIndex) {
+            if (!isWaitingQuiz) return;
+
+            document.getElementById('question-box').style.display = 'none';
+            document.getElementById('options-grid').style.display = 'none';
+            isWaitingQuiz = false;
+
+            if (selectedIndex === currentQuestion.ans) {
+                playSound(800, 0.25, 'sine');
+                score += 100;
+                document.getElementById('score-display').innerText = `Skor: ${score}`;
+                document.getElementById('game-status').innerText = 'Jawaban Benar! Melangkah...';
+                
+                movePlayerSteps(pendingRoll);
+            } else {
+                playSound(150, 0.35, 'sawtooth');
+                document.getElementById('game-status').innerText = 'Jawaban Salah! Bidak Diam';
+            }
+        }
+
+        function movePlayerSteps(steps) {
+            isAnimating = true;
+            let targetPos = playerPos + steps;
+
+            if (targetPos > 100) {
+                targetPos = 100 - (targetPos - 100);
+            }
+
+            let stepInterval = setInterval(() => {
+                if (playerPos < targetPos) {
+                    playerPos++;
+                } else if (playerPos > targetPos) {
+                    playerPos--;
+                }
+
+                playSound(400, 0.08);
+                document.getElementById('player-pos').innerText = playerPos;
+                drawBoard();
+
+                if (playerPos === targetPos) {
+                    clearInterval(stepInterval);
+                    checkSnakesAndLadders();
+                }
+            }, 220);
+        }
+
+        // Animasi Meluncur Halus (Slide Animation) untuk Naik Tangga / Turun Ular
+        function animateSlide(startPosNum, endPosNum, isLadder, callback) {
+            let p1 = getCellCoords(startPosNum);
+            let p2 = getCellCoords(endPosNum);
+
+            let startTime = null;
+            let duration = 800; // Durasi meluncur 0.8 detik
+
+            if (isLadder) {
+                playSound(850, 0.5, 'triangle');
+            } else {
+                playSound(220, 0.5, 'sawtooth');
+            }
+
+            function step(timestamp) {
+                if (!startTime) startTime = timestamp;
+                let progress = Math.min((timestamp - startTime) / duration, 1);
+
+                // Perhitungan Posisi Interpolar Karakter
+                animatedPos = {
+                    x: p1.x + (p2.x - p1.x) * progress,
+                    y: p1.y + (p2.y - p1.y) * progress
+                };
+
+                drawBoard();
+
+                if (progress < 1) {
+                    requestAnimationFrame(step);
+                } else {
+                    animatedPos = null;
+                    playerPos = endPosNum;
+                    document.getElementById('player-pos').innerText = playerPos;
+                    drawBoard();
+                    if (callback) callback();
+                }
+            }
+
+            requestAnimationFrame(step);
+        }
+
+        function checkSnakesAndLadders() {
+            // Cek Naik Tangga
+            if (ladders[playerPos]) {
+                let startPos = playerPos;
+                let targetPos = ladders[playerPos];
+                document.getElementById('game-status').innerText = '🚀 Naik Tangga!';
+                
+                animateSlide(startPos, targetPos, true, () => {
+                    isAnimating = false;
+                    checkVictory();
+                });
+            } 
+            // Cek Digigit Ular
+            else if (snakes[playerPos]) {
+                let startPos = playerPos;
+                let targetPos = snakes[playerPos];
+                document.getElementById('game-status').innerText = '🐍 Digigit Ular!';
+
+                animateSlide(startPos, targetPos, false, () => {
+                    isAnimating = false;
+                    checkVictory();
+                });
+            } else {
+                isAnimating = false;
+                checkVictory();
+            }
+        }
+
+        function checkVictory() {
+            if (playerPos === 100) {
+                document.getElementById('game-status').innerText = '🎉 KEMENANGAN!';
+                playCheerAndApplauseSound();
+                setTimeout(() => {
+                    location.reload();
+                }, 3000);
+            } else {
+                document.getElementById('game-status').innerText = 'Kocok Dadu Lagi';
+            }
+        }
+
+        drawBoard();
+    </script>
+</body>
+</html>

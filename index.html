@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Labirin Matematika - Kelompok 5</title>
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --panel-bg: #151d30;
+            --accent-red: #ef4444;   /* Dinding Pembatas Merah */
+            --accent-gold: #f59e0b;  /* Aksentuasi UI */
+            --accent-blue: #3b82f6;  /* Pemain */
+            --accent-green: #10b981; /* Finish */
+            --accent-cyan: #06b6d4;  /* UI */
+            --text-light: #f8fafc;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-light);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 15px;
+        }
+
+        h1 {
+            font-size: 1.6rem;
+            color: var(--accent-gold);
+            text-align: center;
+            margin-bottom: 2px;
+            text-shadow: 0 0 10px rgba(245, 158, 11, 0.3);
+        }
+
+        p.subtitle {
+            font-size: 0.95rem;
+            color: #94a3b8;
+            margin-bottom: 15px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .main-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            align-items: flex-start;
+            max-width: 1000px;
+            width: 100%;
+        }
+
+        .game-panel {
+            background: var(--panel-bg);
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        canvas {
+            background-color: #0d1322;
+            border-radius: 8px;
+            border: 3px solid var(--accent-gold);
+            box-shadow: 0 0 20px rgba(245, 158, 11, 0.2);
+        }
+
+        .side-panel {
+            flex: 1;
+            min-width: 320px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .card {
+            background: var(--panel-bg);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #1e293b;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+        }
+
+        .card-title {
+            font-size: 1rem;
+            color: var(--accent-gold);
+            margin-bottom: 10px;
+            border-bottom: 1px solid #334155;
+            padding-bottom: 5px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .status-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+            font-size: 0.9rem;
+        }
+
+        .status-val {
+            font-weight: bold;
+            color: var(--accent-cyan);
+        }
+
+        .dice-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .dice-box {
+            width: 48px;
+            height: 48px;
+            background: #ffffff;
+            color: #111;
+            font-size: 1.6rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            box-shadow: 0 0 12px rgba(255, 255, 255, 0.4);
+        }
+
+        .dice-box.rolling {
+            animation: shake 0.25s infinite;
+        }
+
+        @keyframes shake {
+            0% { transform: rotate(0deg) scale(1.05); }
+            50% { transform: rotate(-8deg) scale(1.05); }
+            100% { transform: rotate(8deg) scale(1.05); }
+        }
+
+        .btn {
+            background: linear-gradient(135deg, var(--accent-blue), #1d4ed8);
+            color: white;
+            border: none;
+            padding: 10px 14px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2deg);
+            filter: brightness(1.1);
+        }
+
+        .btn:disabled {
+            background: #334155;
+            color: #64748b;
+            cursor: not-allowed;
+        }
+
+        .btn-dice {
+            background: linear-gradient(135deg, var(--accent-gold), #d97706);
+            color: #000;
+            flex: 1;
+        }
+
+        .question-box {
+            font-size: 1.15rem;
+            font-weight: bold;
+            margin: 10px 0;
+            text-align: center;
+            color: #38bdf8;
+            background: #090d16;
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid #1e293b;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .rule-badge {
+            display: block;
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            color: #fca5a5;
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            margin-top: 8px;
+            text-align: center;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(3, 44px);
+            gap: 6px;
+            justify-content: center;
+            margin-top: 12px;
+        }
+
+        .dpad-btn {
+            background: #1e293b;
+            color: var(--accent-cyan);
+            border: 1px solid #334155;
+            border-radius: 6px;
+            font-size: 1.2rem;
+            height: 44px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .dpad-btn:active {
+            background: var(--accent-gold);
+            color: black;
+        }
+
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 10px;
+            font-size: 0.8rem;
+            justify-content: center;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .legend-box {
+            width: 14px;
+            height: 14px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Labirin Matematika</h1>
+    <p class="subtitle">Kelompok 5</p>
+
+    <div class="main-container">
+        <!-- Papan Game Canvas -->
+        <div class="game-panel">
+            <canvas id="boardCanvas" width="396" height="396"></canvas>
+            
+            <div class="legend">
+                <div class="legend-item"><div class="legend-box" style="background:#ef4444"></div>Dinding Pembatas</div>
+                <div class="legend-item"><div class="legend-box" style="background:#10b981"></div>Finis (Pusat)</div>
+            </div>
+
+            <div class="controls">
+                <div></div>
+                <button class="dpad-btn" onclick="tryMove(0, -1)">▲</button>
+                <div></div>
+                <button class="dpad-btn" onclick="tryMove(-1, 0)">◄</button>
+                <button class="dpad-btn" onclick="tryMove(0, 1)">▼</button>
+                <button class="dpad-btn" onclick="tryMove(1, 0)">►</button>
+            </div>
+        </div>
+
+        <!-- Panel Informasi & Kartu Soal -->
+        <div class="side-panel">
+            <div class="card">
+                <div class="card-title">
+                    <span>Status Permainan</span>
+                    <span id="score-display" style="font-size:0.85rem; color:var(--accent-gold)">Skor: 0</span>
+                </div>
+                <div class="status-row">
+                    <span>Sisa Langkah (Dadu):</span>
+                    <span id="moves-left" class="status-val">0</span>
+                </div>
+                <div class="status-row">
+                    <span>Status Permainan:</span>
+                    <span id="game-status" class="status-val">Kocok Dadu</span>
+                </div>
+
+                <div class="dice-container">
+                    <div id="dice-val" class="dice-box">?</div>
+                    <button id="roll-btn" class="btn btn-dice" onclick="rollDice()">🎲 Kocok Dadu</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">Kartu Soal Numerasi Dasar</div>
+                <p id="quiz-desc" style="font-size:0.85rem; color:#94a3b8;">Kocok dadu dan navigasikan labirin untuk membuka soal numerasi.</p>
+                
+                <div id="question-box" class="question-box" style="display: none;">-</div>
+                <div id="options-grid" class="options-grid" style="display: none;">
+                    <button class="btn" onclick="answerQuiz(0)" id="opt0">-</button>
+                    <button class="btn" onclick="answerQuiz(1)" id="opt1">-</button>
+                    <button class="btn" onclick="answerQuiz(2)" id="opt2">-</button>
+                    <button class="btn" onclick="answerQuiz(3)" id="opt3">-</button>
+                </div>
+                <div id="rule-info" class="rule-badge" style="display:none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Synthesizer Efek Suara (Web Audio API)
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        function playSound(freq, duration, type = 'sine') {
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = type;
+                osc.frequency.value = freq;
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + duration);
+            } catch (e) {}
+        }
+
+        // Fungsi Generasi Suara Tepuk Tangan & Kemeriahan Kemenangan
+        function playCheerAndApplauseSound() {
+            try {
+                const duration = 2.5; // Durasi tepukan dalam detik
+                const bufferSize = audioCtx.sampleRate * duration;
+                const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                const data = buffer.getChannelData(0);
+
+                // Simulasi Suara Tepukan Menggunakan Noise Acak
+                for (let i = 0; i < bufferSize; i++) {
+                    data[i] = Math.random() * 2 - 1;
+                }
+
+                const noise = audioCtx.createBufferSource();
+                noise.buffer = buffer;
+
+                // Bandpass Filter untuk Karakter Suara Tepukan
+                const filter = audioCtx.createBiquadFilter();
+                filter.type = 'bandpass';
+                filter.frequency.value = 1200;
+                filter.Q.value = 1.0;
+
+                const gain = audioCtx.createGain();
+                gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+
+                noise.connect(filter);
+                filter.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                noise.start();
+
+                // Melodi Musik Kemenangan (Fanfare)
+                const fanfareNotes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+                fanfareNotes.forEach((freq, idx) => {
+                    setTimeout(() => {
+                        playSound(freq, 0.4, 'triangle');
+                    }, idx * 180);
+                });
+            } catch (e) {}
+        }
+
+        const canvas = document.getElementById('boardCanvas');
+        const ctx = canvas.getContext('2d');
+
+        const gridCols = 11;
+        const gridRows = 11;
+        const cellSize = canvas.width / gridCols;
+
+        // Papan Labirin 11x11
+        const mazeMap = [
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0],
+            [0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0],
+            [0, 0, 0, 1, 1, 0, 1, 1, 0, 0, 0],
+            [0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0],
+            [0, 1, 0, 0, 0, 2, 0, 0, 0, 1, 0], // Finis Pusat di (5,5)
+            [0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0],
+            [0, 0, 0, 1, 1, 0, 1, 1, 0, 0, 0],
+            [0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0],
+            [0, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        ];
+
+        let player = { x: 0, y: 0 };
+        let finish = { x: 5, y: 5 };
+        let remainingMoves = 0;
+        let isWaitingQuiz = false;
+        let isRolling = false;
+        let currentQuestion = null;
+        let score = 0;
+
+        // BANK SOAL MATEMATIKA TINGKAT DASAR
+        const questionsBank = [
+            { q: "5 + 3 = ...", opts: ["8", "7", "9", "6"], ans: 0, type: "Genap" },
+            { q: "10 - 4 = ...", opts: ["5", "6", "7", "4"], ans: 1, type: "Genap" },
+            { q: "3 x 3 = ...", opts: ["6", "8", "9", "12"], ans: 2, type: "Ganjil" },
+            { q: "12 : 2 = ...", opts: ["4", "6", "5", "8"], ans: 1, type: "Genap" },
+            { q: "7 + 6 = ...", opts: ["12", "13", "14", "15"], ans: 1, type: "Ganjil" },
+            { q: "15 - 7 = ...", opts: ["8", "7", "9", "6"], ans: 0, type: "Genap" },
+            { q: "4 x 2 = ...", opts: ["6", "8", "10", "12"], ans: 1, type: "Genap" },
+            { q: "20 : 4 = ...", opts: ["4", "5", "6", "3"], ans: 1, type: "Ganjil" },
+            { q: "9 + 8 = ...", opts: ["16", "17", "18", "15"], ans: 1, type: "Ganjil" },
+            { q: "14 - 9 = ...", opts: ["4", "5", "6", "3"], ans: 1, type: "Ganjil" },
+            { q: "5 x 5 = ...", opts: ["20", "25", "30", "15"], ans: 1, type: "Ganjil" },
+            { q: "18 : 3 = ...", opts: ["6", "5", "7", "8"], ans: 0, type: "Genap" },
+            { q: "11 + 4 = ...", opts: ["14", "15", "16", "13"], ans: 1, type: "Ganjil" },
+            { q: "16 - 8 = ...", opts: ["8", "7", "9", "6"], ans: 0, type: "Genap" },
+            { q: "6 x 2 = ...", opts: ["10", "12", "14", "8"], ans: 1, type: "Genap" },
+            { q: "24 : 6 = ...", opts: ["3", "4", "5", "6"], ans: 1, type: "Genap" },
+            { q: "8 + 8 = ...", opts: ["15", "16", "17", "14"], ans: 1, type: "Genap" },
+            { q: "13 - 5 = ...", opts: ["8", "7", "9", "6"], ans: 0, type: "Genap" },
+            { q: "7 x 2 = ...", opts: ["12", "14", "16", "15"], ans: 1, type: "Genap" },
+            { q: "30 : 5 = ...", opts: ["5", "6", "7", "8"], ans: 1, type: "Genap" }
+        ];
+
+        function drawBoard() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            for (let r = 0; r < gridRows; r++) {
+                for (let c = 0; c < gridCols; c++) {
+                    let x = c * cellSize;
+                    let y = r * cellSize;
+
+                    if (mazeMap[r][c] === 1) {
+                        ctx.fillStyle = '#ef4444';
+                        ctx.fillRect(x + 1, y + 1, cellSize - 2, cellSize - 2);
+                    } else if (mazeMap[r][c] === 2) {
+                        ctx.fillStyle = '#10b981';
+                        ctx.fillRect(x + 1, y + 1, cellSize - 2, cellSize - 2);
+                        ctx.fillStyle = '#fff';
+                        ctx.font = 'bold 9px sans-serif';
+                        ctx.fillText('FINIS', x + 4, y + 22);
+                    } else {
+                        ctx.strokeStyle = '#1e293b';
+                        ctx.strokeRect(x, y, cellSize, cellSize);
+                    }
+                }
+            }
+
+            let px = player.x * cellSize + cellSize / 2;
+            let py = player.y * cellSize + cellSize / 2;
+
+            ctx.fillStyle = '#3b82f6';
+            ctx.shadowColor = '#3b82f6';
+            ctx.shadowBlur = 8;
+            ctx.beginPath();
+            ctx.arc(px, py, cellSize / 3, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+        }
+
+        function rollDice() {
+            if (remainingMoves > 0 || isWaitingQuiz || isRolling) return;
+
+            isRolling = true;
+            const diceEl = document.getElementById('dice-val');
+            const rollBtn = document.getElementById('roll-btn');
+            
+            diceEl.classList.add('rolling');
+            rollBtn.disabled = true;
+
+            let counter = 0;
+            const interval = setInterval(() => {
+                diceEl.innerText = Math.floor(Math.random() * 6) + 1;
+                playSound(300 + counter * 20, 0.05);
+                counter++;
+                if (counter > 10) {
+                    clearInterval(interval);
+                    remainingMoves = parseInt(diceEl.innerText);
+                    document.getElementById('moves-left').innerText = remainingMoves;
+                    diceEl.classList.remove('rolling');
+                    rollBtn.disabled = false;
+                    isRolling = false;
+                    playSound(600, 0.15, 'triangle');
+                    triggerQuiz();
+                }
+            }, 60);
+        }
+
+        function triggerQuiz() {
+            isWaitingQuiz = true;
+            document.getElementById('game-status').innerText = 'Jawab Soal Dahulu';
+
+            currentQuestion = questionsBank[Math.floor(Math.random() * questionsBank.length)];
+            
+            document.getElementById('question-box').innerText = currentQuestion.q;
+            document.getElementById('question-box').style.display = 'block';
+            document.getElementById('options-grid').style.display = 'grid';
+            
+            for (let i = 0; i < 4; i++) {
+                document.getElementById(`opt${i}`).innerText = currentQuestion.opts[i];
+            }
+
+            document.getElementById('quiz-desc').innerText = "Selesaikan soal numerasi dasar untuk mengeksekusi langkah:";
+            document.getElementById('rule-info').style.display = 'block';
+            document.getElementById('rule-info').innerText = `Properti Jawaban: Nilai bernilai ${currentQuestion.type}`;
+        }
+
+        function answerQuiz(selectedIndex) {
+            if (!isWaitingQuiz) return;
+
+            if (selectedIndex === currentQuestion.ans) {
+                playSound(800, 0.25, 'sine');
+                score += 100;
+                document.getElementById('score-display').innerText = `Skor: ${score}`;
+                
+                isWaitingQuiz = false;
+                document.getElementById('game-status').innerText = 'Silakan Melangkah';
+            } else {
+                playSound(150, 0.35, 'sawtooth');
+                
+                remainingMoves = Math.max(0, remainingMoves - 1);
+                document.getElementById('moves-left').innerText = remainingMoves;
+                
+                isWaitingQuiz = false;
+
+                if (remainingMoves === 0) {
+                    document.getElementById('game-status').innerText = 'Kocok Dadu Lagi';
+                } else {
+                    document.getElementById('game-status').innerText = 'Silakan Melangkah';
+                }
+            }
+
+            document.getElementById('question-box').style.display = 'none';
+            document.getElementById('options-grid').style.display = 'none';
+            document.getElementById('rule-info').style.display = 'none';
+            document.getElementById('quiz-desc').innerText = "Kocok dadu kembali atau lanjutkan melangkah.";
+        }
+
+        function tryMove(dx, dy) {
+            if (isWaitingQuiz) {
+                playSound(120, 0.15, 'square');
+                return;
+            }
+
+            if (remainingMoves <= 0) {
+                playSound(120, 0.15, 'square');
+                return;
+            }
+
+            let targetX = player.x + dx;
+            let targetY = player.y + dy;
+
+            if (targetX < 0 || targetX >= gridCols || targetY < 0 || targetY >= gridRows) return;
+
+            // Cek Dinding Merah
+            if (mazeMap[targetY][targetX] === 1) {
+                playSound(150, 0.2, 'square');
+                return;
+            }
+
+            player.x = targetX;
+            player.y = targetY;
+            remainingMoves--;
+            score += 15;
+
+            playSound(400, 0.08);
+            document.getElementById('moves-left').innerText = remainingMoves;
+            document.getElementById('score-display').innerText = `Skor: ${score}`;
+
+            // Cek Finis Pusat
+            if (player.x === finish.x && player.y === finish.y) {
+                playCheerAndApplauseSound(); // Panggil Suara Tepuk Tangan & Kemeriahan
+                drawBoard();
+                setTimeout(() => {
+                    location.reload();
+                }, 2500);
+                return;
+            }
+
+            if (remainingMoves === 0) {
+                document.getElementById('game-status').innerText = 'Kocok Dadu Lagi';
+            }
+
+            drawBoard();
+        }
+
+        window.addEventListener('keydown', (e) => {
+            if (e.code === 'ArrowUp' || e.code === 'KeyW') tryMove(0, -1);
+            if (e.code === 'ArrowDown' || e.code === 'KeyS') tryMove(0, 1);
+            if (e.code === 'ArrowLeft' || e.code === 'KeyA') tryMove(-1, 0);
+            if (e.code === 'ArrowRight' || e.code === 'KeyD') tryMove(1, 0);
+            if (e.code === 'Space') rollDice();
+        });
+
+        drawBoard();
+    </script>
+</body>
+</html>
